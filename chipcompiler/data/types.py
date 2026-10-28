@@ -41,6 +41,7 @@ class StepEnum(StepBaseEnum):
     POST_FLOORPLAN = "postFloorplan"
     PREPLACE = "preplace"
     PLACEMENT = "place"
+    DIFF_BUFFERING = "diff_buffering"
     DIFF_SIZING = "diff_sizing"
     CTS = "CTS"
     LEGALIZATION = "legalization"
@@ -67,6 +68,7 @@ class SkippableStepEnum(StepBaseEnum):
     """
 
     LEC = "lec"
+    DIFF_OPT = "diff_opt"
     POST_ROUTE_LEC = "postRouteLec"
     TIMING_OPT = "Timing optimization"
 
@@ -112,6 +114,8 @@ FLOW_STEP_POLICIES: Final[dict[str, FlowStepPolicy]] = {
     StepEnum.POST_FLOORPLAN.value: FlowStepPolicy(FlowStepCategory.PNR),
     StepEnum.PREPLACE.value: FlowStepPolicy(FlowStepCategory.PNR),
     StepEnum.PLACEMENT.value: FlowStepPolicy(FlowStepCategory.PNR),
+    StepEnum.DIFF_BUFFERING.value: FlowStepPolicy(FlowStepCategory.PNR),
+    SkippableStepEnum.DIFF_OPT.value: FlowStepPolicy(FlowStepCategory.PNR),
     StepEnum.DIFF_SIZING.value: FlowStepPolicy(FlowStepCategory.PNR),
     StepEnum.CTS.value: FlowStepPolicy(FlowStepCategory.PNR),
     StepEnum.LEGALIZATION.value: FlowStepPolicy(FlowStepCategory.PNR),
@@ -168,10 +172,9 @@ def default_flow_step_category(step: StepBaseEnum | str) -> FlowStepCategory:
     return policy.category if policy is not None else FlowStepCategory.PNR
 
 
-# Projects that declare no skip policy skip the synthesis LEC: the
-# conservative default keeps pre-existing projects' ledgers unchanged.
-# An explicit empty skip list is the only way to enable it.
-DEFAULT_SKIP_STEPS: Final = (SkippableStepEnum.LEC.value,)
+# New flows skip synthesis LEC and placement-parasitic diff_opt by default.
+# An explicit skip list replaces this policy; existing ledgers are preserved.
+DEFAULT_SKIP_STEPS: Final = (SkippableStepEnum.LEC.value, SkippableStepEnum.DIFF_OPT.value)
 
 
 class ToolName(StrEnum):
